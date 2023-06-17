@@ -1,0 +1,12 @@
+pomiar 1 1,5m do przodu potem 0,5 metra w bok ,ta sama wysokosc ciagle, 
+bez przekrecania pico
+
+Pomiar 2 ta sama trasa tylko w boki jeszcze było i do góry i w dół i na boki
+
+Pomiar 3 ta sama trasa tylko góra i dół płytka ciagle w ten sam kierunek zwrócona
+
+W pomiarze 1,2,3 przy zakręcie płytka nie skręca tylko zaczyna się poruszać wobec innej osi
+
+Pomiar 4 ta sama trasa obrócenie płytki gdy jest zakręt, i góra i dół
+
+Akcelerometr 8G, żyroskop 1000gfs
