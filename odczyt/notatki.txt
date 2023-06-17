@@ -10,3 +10,5 @@ W pomiarze 1,2,3 przy zakręcie płytka nie skręca tylko zaczyna się poruszać
 Pomiar 4 ta sama trasa obrócenie płytki gdy jest zakręt, i góra i dół
 
 Akcelerometr 8G, żyroskop 1000gfs
+
+Kolejność wyników accel X Y Z gyro X Y Z
