@@ -20,38 +20,38 @@ class TestChart(QWidget):
     def __init__(self):
         super().__init__()
 
-        dataFreqz = 100; # number of readigns from sensor in time of 1s
-
-        self.series = QLineSeries()
-        for x in range(len(ax)):
-             self.series.append(QPointF(x/dataFreqz, ax[x]))
-             
-        ##..creating chart for x..
-        self.chart = QChart()
-        self.chart.legend().hide()
-        self.chart.addSeries(self.series)
-        self.chart.createDefaultAxes()
-        self.chart.setTitle("odczyt osi x akcelerometr")
+   
         ##..creating chartview from chart..
-        self._chart_view = QChartView(self.chart)
-        self._chart_view.setRenderHint(QPainter.Antialiasing)
+
 
         self.testButton = QPushButton()
 
         self.layout = QHBoxLayout()
-        size = QSizePolicy(QSizePolicy.Preferred,QSizePolicy.Preferred)
-
-        size.setHorizontalStretch(1)
-        self.testButton.setSizePolicy(size)
-        self.layout.addWidget(self.testButton)
-
-        size.setHorizontalStretch(4)
-        self._chart_view.setSizePolicy(size)
-        self.layout.addWidget(self._chart_view)
-
-
+        self.AddDataToChart(ax,self.layout,"X")  
+        self.AddDataToChart(ay,self.layout,"Y")
+        self.AddDataToChart(az,self.layout,"Z")
         self.setLayout(self.layout)
         #self.setCentralWidget(self._chart_view)
+    def AddDataToChart(self,data,layout,axisTitle):
+                
+        dataFreqz = 100; # number of readigns from sensor in time of 1s
+
+        self.series = QLineSeries()
+        for x in range(len(data)):
+             self.series.append(QPointF(x/dataFreqz, data[x]))
+        self.chart = QChart()
+        self.chart.legend().hide()
+        self.chart.addSeries(self.series)
+        self.chart.createDefaultAxes()
+        self.chart.setTitle("odczyt z akcelerometru dla osi " + axisTitle)
+
+        self._chart_view = QChartView(self.chart)
+        self._chart_view.setRenderHint(QPainter.Antialiasing)
+
+        size = QSizePolicy(QSizePolicy.Preferred,QSizePolicy.Preferred)
+        size.setHorizontalStretch(4)
+        self._chart_view.setSizePolicy(size)
+        layout.addWidget(self._chart_view)
 
 
 if __name__ == "__main__":
@@ -60,5 +60,5 @@ if __name__ == "__main__":
     window = TestChart()
     window.setWindowTitle("Inertial Navigation Controll App")
     window.show()
-    window.resize(600, 400)
+    window.resize(1200, 500)
     sys.exit(app.exec())
