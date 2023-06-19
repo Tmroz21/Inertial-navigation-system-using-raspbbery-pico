@@ -31,6 +31,7 @@ class TestChart(QWidget):
         self.AddDataToChart(ay,self.layout,"Y")
         self.AddDataToChart(az,self.layout,"Z")
         self.setLayout(self.layout)
+        print(self.layout.itemAt(2).isEmpty)
         #self.setCentralWidget(self._chart_view)
     def AddDataToChart(self,data,layout,axisTitle):
                 
@@ -39,17 +40,19 @@ class TestChart(QWidget):
         self.series = QLineSeries()
         for x in range(len(data)):
              self.series.append(QPointF(x/dataFreqz, data[x]))
+        #..creating chart..
         self.chart = QChart()
         self.chart.legend().hide()
-        self.chart.addSeries(self.series)
+        self.chart.addSeries(self.series) # adding series to chart
         self.chart.createDefaultAxes()
         self.chart.setTitle("odczyt z akcelerometru dla osi " + axisTitle)
-
+        #..creating chartView from chart
         self._chart_view = QChartView(self.chart)
         self._chart_view.setRenderHint(QPainter.Antialiasing)
 
+        #..adding chartView to layout
         size = QSizePolicy(QSizePolicy.Preferred,QSizePolicy.Preferred)
-        size.setHorizontalStretch(4)
+        size.setHorizontalStretch(1)
         self._chart_view.setSizePolicy(size)
         layout.addWidget(self._chart_view)
 
