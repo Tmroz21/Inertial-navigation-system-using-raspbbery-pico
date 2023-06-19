@@ -1,0 +1,1 @@
+pico musi byc w bezruchu, zakladajac przyspieszenie jak magnitude z kilku pomiarów w pozycji startowej obliczamy odchylenie od 0 poszczegolnych osi 
