@@ -24,6 +24,7 @@ class MainWindow(QWidget):
         self.comComboBox = QComboBox()
 
         comList = []
+        currentComport = "X"
 
         chartLayout = QHBoxLayout()
         portsViewLayout = QHBoxLayout()
@@ -45,13 +46,6 @@ class MainWindow(QWidget):
         mainLayout.addLayout(chartLayout)
         
         self.setLayout(mainLayout)
-
-    def FindAvalibleComports(self,comList):
-        ports = serial.tools.list_ports.comports()
-
-        for port, desc, hwid in sorted(ports):
-            comList.append("{}: {}".format(port, desc))
-        print(comList)
 
     def AddDataToChart(self,data,layout,axisTitle):
                 
@@ -75,11 +69,18 @@ class MainWindow(QWidget):
         size.setHorizontalStretch(1)
         self._chart_view.setSizePolicy(size)
         layout.addWidget(self._chart_view)
+    def FindAvalibleComports(self,comList):
 
-    def SetCurrentPort(self):
-        print("clicked")
-        value = self.comComboBox.currentIndex
-        print(value)
+        ports = serial.tools.list_ports.comports()
+
+        for port, desc, hwid in sorted(ports):
+            comList.append("{}".format(port))
+        print(comList)
+
+    def SetCurrentPort(self,index):
+        self.currentComport = self.comComboBox.itemText(index)
+        print(self.currentComport)
+
         
     def AddPortsToCombo(self,comList,combo):
         for port in sorted(comList):
