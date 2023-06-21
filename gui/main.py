@@ -78,6 +78,8 @@ class MainWindow(QWidget):
 
     def SetCurrentPort(self):
         print("clicked")
+        value = self.comComboBox.currentIndex
+        print(value)
         
     def AddPortsToCombo(self,comList,combo):
         for port in sorted(comList):
