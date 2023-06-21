@@ -2,7 +2,7 @@ import serial
 import pandas as pd
 
 
-ser = serial.Serial('/dev/tty.usbmodem143201')
+ser = serial.Serial('com11')
 results = []
 data = ''
 it = 0
@@ -23,7 +23,7 @@ while 1:
     else:
         data = data + r
 
-f = open('pomiar4.txt', 'w')  # otwieramy/tworzymy plik pomiar1.txt w trybie do odczytu
+f = open('pomiar5.txt', 'w')  # otwieramy/tworzymy plik pomiar1.txt w trybie do odczytu
 for line in results:  # iterujamy listę results
     f.write(line + '\n')  # i w każdej iteracji zapisujemy kolejny element listy do pliku
 f.close()
