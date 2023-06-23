@@ -109,18 +109,21 @@ class MainWindow(QWidget):
         
 
     def SetChart(self,chart,series,chartLayout):
-        axisX = QValueAxis()
-        axisY = QValueAxis()
+
         chart.legend().hide()
         chart.addSeries(series)  # adding series to chart
+        # .. axis properties ..
+        axisX = QValueAxis()
+        axisY = QValueAxis()
         axisY.setRange(-2.0,2.0) # setting the range for y axis
-        axisY.setTitleText("Przyśpieszenie[g]")
+        axisY.setTitleText("Przyśpieszenie[g]") # seting title to y axis
         axisX.setRange(0.0,self.maximumXValue) # setting the range for x axis
-        axisX.setTitleText("Czas[s]")
+        axisX.setTitleText("Czas[s]") # setting title to x axis
         chart.setAxisX(axisX,series) # connecting axis propertis to series 
         chart.setAxisY(axisY,series) # connecting axis properties to series
+
         chart.setTitle("odczyt z akcelerometru dla osi X ")     
-        chartView = QChartView(chart)
+        chartView = QChartView(chart) #adding chart to chartView
         chartView.setRenderHint(QPainter.Antialiasing)
         chartLayout.addWidget(chartView) # adding chartView to layout
         size = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
