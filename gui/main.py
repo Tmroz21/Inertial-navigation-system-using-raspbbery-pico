@@ -9,9 +9,6 @@ from PySide6.QtGui import QPainter
 from PySide6.QtWidgets import QMainWindow, QApplication, QGridLayout, QSizePolicy, QPushButton, QHBoxLayout, QWidget,QVBoxLayout, QComboBox
 from PySide6.QtCharts import QChart, QChartView, QLineSeries, QValueAxis
 
-
-df1 = pd.read_csv('gui\pomiar3.csv')
-
 accel = 8.0/32768.0
 gyro = 1000.0/32768.0
 
@@ -67,55 +64,30 @@ class MainWindow(QWidget):
         self.seriesAccelX = QLineSeries()
         self.seriesAccelY = QLineSeries()
         self.seriesAccelZ = QLineSeries()
-        for x in range(len(ax)):
+        #for x in range(len(ax)):
            # self.seriesAccelX.append(QPointF(x / dataFreqz, ax[x]))
-            self.seriesAccelY.append(QPointF(x / dataFreqz, ay[x]))
-            self.seriesAccelZ.append(QPointF(x / dataFreqz, az[x]))
+            #self.seriesAccelY.append(QPointF(x / dataFreqz, ay[x]))
+            #self.seriesAccelZ.append(QPointF(x / dataFreqz, az[x]))
 
         self.chartAccX = QChart()
-        self.chartAccX.legend().hide()
-        self.chartAccX.addSeries(self.seriesAccelX)  # adding series to chart
-        #self.chartAccX.createDefaultAxes()
-        
-        self.axisX = QValueAxis()
-        self.axisY = QValueAxis()
-        self.axisY.setRange(-2.0,2.0)
-        self.axisY.setTitleText("Przyśpieszenie[g]")
-        self.axisX.setRange(0.0,self.maximumXValue)
-        self.axisX.setTitleText("Czas[s]")
-        self.chartAccX.setAxisX(self.axisX,self.seriesAccelX)
-        self.chartAccX.setAxisY(self.axisY,self.seriesAccelX)
-
-
-        self.chartAccX.setTitle("odczyt z akcelerometru dla osi X ")
         self.chartAccY = QChart()
-        self.chartAccY.legend().hide()
-        self.chartAccY.addSeries(self.seriesAccelY) # adding series to chart
-        self.chartAccY.createDefaultAxes()
-        self.chartAccY.setTitle("odczyt z akcelerometru dla osi Y ")
         self.chartAccZ = QChart()
-        self.chartAccZ.legend().hide()
-        self.chartAccZ.addSeries(self.seriesAccelZ) # adding series to chart
-        self.chartAccZ.createDefaultAxes()
-        self.chartAccZ.setTitle("odczyt z akcelerometru dla osi Z")
+       #self.chartAccX.legend().hide()
+        #self.chartAccX.addSeries(self.seriesAccelX)  # adding series to chart
+            #self.chartAccX.createDefaultAxes()
+        
 
-        self._chart_viewAccX = QChartView(self.chartAccX)
-        self._chart_viewAccX.setRenderHint(QPainter.Antialiasing)
-        self._chart_viewAccY = QChartView(self.chartAccY)
-        self._chart_viewAccY.setRenderHint(QPainter.Antialiasing)
-        self._chart_viewAccZ = QChartView(self.chartAccZ)
-        self._chart_viewAccZ.setRenderHint(QPainter.Antialiasing)
+        #self.axisY.setRange(-2.0,2.0)
+        #self.axisY.setTitleText("Przyśpieszenie[g]")
+        #self.axisX.setRange(0.0,self.maximumXValue)
+        #self.axisX.setTitleText("Czas[s]")
+        #self.chartAccX.setAxisX(self.axisX,self.seriesAccelX)
+        #self.chartAccX.setAxisY(self.axisY,self.seriesAccelX)
 
-        size = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        size.setHorizontalStretch(1)
-
-        self._chart_viewAccX.setSizePolicy(size)
-        self._chart_viewAccY.setSizePolicy(size)
-        self._chart_viewAccZ.setSizePolicy(size)
-
-        chartLayout.addWidget(self._chart_viewAccX)
-        chartLayout.addWidget(self._chart_viewAccY)
-        chartLayout.addWidget(self._chart_viewAccZ)
+        #self.chartAccX.setTitle("odczyt z akcelerometru dla osi X ")
+        self.SetChart(self.chartAccX,self.seriesAccelX,chartLayout)
+        self.SetChart(self.chartAccY,self.seriesAccelY,chartLayout)
+        self.SetChart(self.chartAccZ,self.seriesAccelZ,chartLayout)   
 
         self.FindAvalibleComports(comList) # finding avalible ports and appending them to comList
         self.AddPortsToCombo(comList,self.comComboBox) # adding ports to list
@@ -135,19 +107,40 @@ class MainWindow(QWidget):
         self.worker = Worker(self.UpdatePlot,100)
         self.refreshButton.clicked.connect(self.worker.start)
         
-        self.timevarp = 3.0
+
+    def SetChart(self,chart,series,chartLayout):
+        axisX = QValueAxis()
+        axisY = QValueAxis()
+        chart.legend().hide()
+        chart.addSeries(series)  # adding series to chart
+        axisY.setRange(-2.0,2.0) # setting the range for y axis
+        axisY.setTitleText("Przyśpieszenie[g]")
+        axisX.setRange(0.0,self.maximumXValue) # setting the range for x axis
+        axisX.setTitleText("Czas[s]")
+        chart.setAxisX(axisX,series) # connecting axis propertis to series 
+        chart.setAxisY(axisY,series) # connecting axis properties to series
+        chart.setTitle("odczyt z akcelerometru dla osi X ")     
+        chartView = QChartView(chart)
+        chartView.setRenderHint(QPainter.Antialiasing)
+        chartLayout.addWidget(chartView) # adding chartView to layout
+        size = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        size.setHorizontalStretch(1)
+        chartView.setSizePolicy(size)
 
     def UpdatePlot(self):
-        self.seriesAccelX.remove
+        
         #self.arr.append(int(getData(self.currentComport)))
         self.time = self.time + self.timeStep
         dataFreqz = 100
-        self.seriesAccelX.append(self.time, getData(self.currentComport))
+        self.seriesAccelX.append(self.time, getData(self.currentComport,"ax"))
+        self.seriesAccelY.append(self.time, getData(self.currentComport,"ay"))
+        self.seriesAccelZ.append(self.time, getData(self.currentComport,"az"))
+        
         if self.time >= self.maximumXValue:
             self.time = 0.0
             self.seriesAccelX.removePoints(0,int(self.maximumXValue/ self.timeStep)+1)
-        #self.chartAccX.update()
-        #self._chart_viewAccX.update()
+            self.seriesAccelY.removePoints(0,int(self.maximumXValue/ self.timeStep)+1)
+            self.seriesAccelZ.removePoints(0,int(self.maximumXValue/ self.timeStep)+1)
 
     def FindAvalibleComports(self,comList):
 
@@ -160,14 +153,13 @@ class MainWindow(QWidget):
     def SetCurrentPort(self,index):
         self.currentComport = self.comComboBox.itemText(index)
         print(self.currentComport)
-
-        
+      
     def AddPortsToCombo(self,comList,combo):
         for port in sorted(comList):
             combo.addItem(port)
 
-def getData(currentComport):
-    ser = serial.Serial("COM6",timeout=0)
+def getData(currentComport,dataType):
+    ser = serial.Serial(currentComport,timeout=0)
     data = ''
     while 1:
         x = ser.read()
@@ -190,8 +182,13 @@ def getData(currentComport):
     ax.append(int(new_ax) * accel)
     ay.append(int(new_ay))
     az.append(int(new_az))
-    #print(str(int(new_ax)*accel))
-    return int(new_ax)*accel
+    match dataType:
+        case "ax":
+            return int(new_ax)*accel
+        case "ay":
+            return int(new_ay)*accel
+        case "az":
+            return int(new_az)*accel
 
 
 if __name__ == "__main__":
