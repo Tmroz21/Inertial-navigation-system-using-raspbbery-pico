@@ -55,6 +55,7 @@ class MainWindow(QWidget):
         self.timeStep = 0.1
 
         acChartLayout = QHBoxLayout()
+        gyChartLayout = QHBoxLayout()
         portsViewLayout = QHBoxLayout()
         mainLayout = QVBoxLayout()
 
@@ -63,14 +64,24 @@ class MainWindow(QWidget):
         self.seriesAccelX = QLineSeries()
         self.seriesAccelY = QLineSeries()
         self.seriesAccelZ = QLineSeries()
+        self.seriesGyroX = QLineSeries()
+        self.seriesGyroY = QLineSeries()
+        self.seriesGyroZ = QLineSeries()
 
         self.chartAccX = QChart()
         self.chartAccY = QChart()
         self.chartAccZ = QChart()
+        self.chartGyX = QChart()
+        self.chartGyY = QChart()
+        self.chartGyZ = QChart()
 
-        self.SetChart(self.chartAccX,self.seriesAccelX,acChartLayout)
-        self.SetChart(self.chartAccY,self.seriesAccelY,acChartLayout)
-        self.SetChart(self.chartAccZ,self.seriesAccelZ,acChartLayout)   
+        self.SetChart(self.chartAccX,self.seriesAccelX,acChartLayout,2.0,"acc","x")
+        self.SetChart(self.chartAccY,self.seriesAccelY,acChartLayout,2.0,"acc","y")
+        self.SetChart(self.chartAccZ,self.seriesAccelZ,acChartLayout,2.0,"acc","z")
+        
+        self.SetChart(self.chartGyX,self.seriesGyroX,gyChartLayout,360.0,"gyro","x")
+        self.SetChart(self.chartGyY,self.seriesGyroY,gyChartLayout,360.0,"gyro","y")
+        self.SetChart(self.chartGyZ,self.seriesGyroZ,gyChartLayout,360.0,"gyro","z")
 
         self.FindAvalibleComports(comList) # finding avalible ports and appending them to comList
         self.AddPortsToCombo(comList,self.comComboBox) # adding ports to list
@@ -82,6 +93,7 @@ class MainWindow(QWidget):
 
         mainLayout.addLayout(portsViewLayout)
         mainLayout.addLayout(acChartLayout)
+        mainLayout.addLayout(gyChartLayout)
         
         self.setLayout(mainLayout)
 
@@ -89,21 +101,30 @@ class MainWindow(QWidget):
         self.refreshButton.clicked.connect(self.worker.start)
         
 
-    def SetChart(self,chart,series,chartLayout):
+    def SetChart(self,chart,series,chartLayout,xAxisRange,chartType,title):
 
         chart.legend().hide()
         chart.addSeries(series)  # adding series to chart
         # .. axis properties ..
         axisX = QValueAxis()
         axisY = QValueAxis()
-        axisY.setRange(-2.0,2.0) # setting the range for y axis
-        axisY.setTitleText("Przyśpieszenie[g]") # seting title to y axis
+        axisY.setRange(-xAxisRange,xAxisRange) # setting the range for y axis
+        match chartType: # seting title to y axis
+            case "acc":
+                axisY.setTitleText("Przyśpieszenie[g]") 
+            case "gyro":
+                axisY.setTitleText("Przyśpieszenie[deg]") 
         axisX.setRange(0.0,self.maximumXValue) # setting the range for x axis
         axisX.setTitleText("Czas[s]") # setting title to x axis
         chart.setAxisX(axisX,series) # connecting axis propertis to series 
         chart.setAxisY(axisY,series) # connecting axis properties to series
         # ...
-        chart.setTitle("odczyt z akcelerometru dla osi X ")     
+        match chartType: # seting title to y axis
+            case "acc":
+                      chart.setTitle("odczyt z akcelerometru dla osi " + title)  
+            case "gyro":
+                      chart.setTitle("odczyt z żyroskopu dla osi " + title)  
+      
         chartView = QChartView(chart) #adding chart to chartView
         chartView.setRenderHint(QPainter.Antialiasing)
         chartLayout.addWidget(chartView) # adding chartView to layout
@@ -118,13 +139,18 @@ class MainWindow(QWidget):
         self.seriesAccelX.append(self.time, getData(self.currentComport,"ax"))
         self.seriesAccelY.append(self.time, getData(self.currentComport,"ay"))
         self.seriesAccelZ.append(self.time, getData(self.currentComport,"az"))
+        self.seriesGyroX.append(self.time, getData(self.currentComport,"gx"))
+        self.seriesGyroY.append(self.time, getData(self.currentComport,"gy"))
+        self.seriesGyroZ.append(self.time, getData(self.currentComport,"gz"))
         
         if self.time >= self.maximumXValue:
             self.time = 0.0
             self.seriesAccelX.removePoints(0,int(self.maximumXValue/ self.timeStep)+1)
             self.seriesAccelY.removePoints(0,int(self.maximumXValue/ self.timeStep)+1)
             self.seriesAccelZ.removePoints(0,int(self.maximumXValue/ self.timeStep)+1)
-
+            self.seriesGyroX.removePoints(0,int(self.maximumXValue/ self.timeStep)+1)
+            self.seriesGyroY.removePoints(0,int(self.maximumXValue/ self.timeStep)+1)
+            self.seriesGyroZ.removePoints(0,int(self.maximumXValue/ self.timeStep)+1)
     def FindAvalibleComports(self,comList):
 
         ports = serial.tools.list_ports.comports()
@@ -159,12 +185,15 @@ def getData(currentComport,dataType):
     data = data[i+1:]
     i =data.find(',')
     new_az = data[0:i]
-    ax.pop(0)
-    ay.pop(0)
-    az.pop(0)
-    ax.append(int(new_ax) * accel)
-    ay.append(int(new_ay))
-    az.append(int(new_az))
+    data = data[i+1:]
+    i =data.find(',')
+    new_gx = data[0:i]
+    data = data[i+1:]
+    i =data.find(',')
+    new_gy = data[0:i]
+    data = data[i+1:]
+    i =data.find(',')
+    new_gz = data[0:i]
     match dataType:
         case "ax":
             return int(new_ax)*accel
@@ -172,6 +201,12 @@ def getData(currentComport,dataType):
             return int(new_ay)*accel
         case "az":
             return int(new_az)*accel
+        case "gx":
+            return int(new_gx)*gyro       
+        case "gz":
+            return int(new_gy)*gyro
+        case "gy":
+            return int(new_gz)*gyro
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
@@ -179,6 +214,6 @@ if __name__ == "__main__":
     window = MainWindow()
     window.setWindowTitle("Inertial Navigation Controll App")
     window.show()
-    window.resize(1200, 500)
+    window.resize(1200, 900)
 
     sys.exit(app.exec())
