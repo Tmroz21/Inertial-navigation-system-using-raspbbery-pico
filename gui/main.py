@@ -81,7 +81,7 @@ class MainWindow(QWidget):
         portsViewLayout.addWidget(self.comComboBox)
 
         mainLayout.addLayout(portsViewLayout)
-        mainLayout.addLayout(chartLayout)
+        mainLayout.addLayout(acChartLayout)
         
         self.setLayout(mainLayout)
 
