@@ -10,7 +10,8 @@ from PySide6.QtWidgets import QMainWindow, QApplication, QGridLayout, QSizePolic
 from PySide6.QtCharts import QChart, QChartView, QLineSeries, QValueAxis
 
 
-df1 = pd.read_csv('gui\pomiar3.csv')
+
+df1 = pd.read_csv('pomiar3.csv')
 
 accel = 8.0/32768.0
 gyro = 1000.0/32768.0
