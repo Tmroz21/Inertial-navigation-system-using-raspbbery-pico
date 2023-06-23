@@ -54,46 +54,28 @@ class MainWindow(QWidget):
         self.maximumXValue = 15.0
         self.timeStep = 0.1
 
-        chartLayout = QHBoxLayout()
+        acChartLayout = QHBoxLayout()
         portsViewLayout = QHBoxLayout()
         mainLayout = QVBoxLayout()
 
-        # data series
         dataFreqz = 100;  # number of readigns from sensor in time of 1s
 
         self.seriesAccelX = QLineSeries()
         self.seriesAccelY = QLineSeries()
         self.seriesAccelZ = QLineSeries()
-        #for x in range(len(ax)):
-           # self.seriesAccelX.append(QPointF(x / dataFreqz, ax[x]))
-            #self.seriesAccelY.append(QPointF(x / dataFreqz, ay[x]))
-            #self.seriesAccelZ.append(QPointF(x / dataFreqz, az[x]))
 
         self.chartAccX = QChart()
         self.chartAccY = QChart()
         self.chartAccZ = QChart()
-       #self.chartAccX.legend().hide()
-        #self.chartAccX.addSeries(self.seriesAccelX)  # adding series to chart
-            #self.chartAccX.createDefaultAxes()
-        
 
-        #self.axisY.setRange(-2.0,2.0)
-        #self.axisY.setTitleText("Przyśpieszenie[g]")
-        #self.axisX.setRange(0.0,self.maximumXValue)
-        #self.axisX.setTitleText("Czas[s]")
-        #self.chartAccX.setAxisX(self.axisX,self.seriesAccelX)
-        #self.chartAccX.setAxisY(self.axisY,self.seriesAccelX)
-
-        #self.chartAccX.setTitle("odczyt z akcelerometru dla osi X ")
-        self.SetChart(self.chartAccX,self.seriesAccelX,chartLayout)
-        self.SetChart(self.chartAccY,self.seriesAccelY,chartLayout)
-        self.SetChart(self.chartAccZ,self.seriesAccelZ,chartLayout)   
+        self.SetChart(self.chartAccX,self.seriesAccelX,acChartLayout)
+        self.SetChart(self.chartAccY,self.seriesAccelY,acChartLayout)
+        self.SetChart(self.chartAccZ,self.seriesAccelZ,acChartLayout)   
 
         self.FindAvalibleComports(comList) # finding avalible ports and appending them to comList
         self.AddPortsToCombo(comList,self.comComboBox) # adding ports to list
         
         self.comComboBox.activated.connect(self.SetCurrentPort) # connecting SetCurrentPort function to comComboBox activating when item is chosen from the list
-
 
         portsViewLayout.addWidget(self.refreshButton)
         portsViewLayout.addWidget(self.comComboBox)
@@ -102,7 +84,6 @@ class MainWindow(QWidget):
         mainLayout.addLayout(chartLayout)
         
         self.setLayout(mainLayout)
-
 
         self.worker = Worker(self.UpdatePlot,100)
         self.refreshButton.clicked.connect(self.worker.start)
@@ -121,7 +102,7 @@ class MainWindow(QWidget):
         axisX.setTitleText("Czas[s]") # setting title to x axis
         chart.setAxisX(axisX,series) # connecting axis propertis to series 
         chart.setAxisY(axisY,series) # connecting axis properties to series
-
+        # ...
         chart.setTitle("odczyt z akcelerometru dla osi X ")     
         chartView = QChartView(chart) #adding chart to chartView
         chartView.setRenderHint(QPainter.Antialiasing)
@@ -130,8 +111,7 @@ class MainWindow(QWidget):
         size.setHorizontalStretch(1)
         chartView.setSizePolicy(size)
 
-    def UpdatePlot(self):
-        
+    def UpdatePlot(self):       
         #self.arr.append(int(getData(self.currentComport)))
         self.time = self.time + self.timeStep
         dataFreqz = 100
@@ -192,7 +172,6 @@ def getData(currentComport,dataType):
             return int(new_ay)*accel
         case "az":
             return int(new_az)*accel
-
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
