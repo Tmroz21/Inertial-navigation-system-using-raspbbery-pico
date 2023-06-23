@@ -4,10 +4,11 @@ import sys
 import pandas as pd
 import numpy as np
 # from PyQt5.QtCore import QTimer
-from PySide6.QtCore import QPointF, QObject, QTimer#, pyqtSignal
+from PySide6.QtCore import QPointF, QObject, QTimer, QRectF
 from PySide6.QtGui import QPainter
 from PySide6.QtWidgets import QMainWindow, QApplication, QGridLayout, QSizePolicy, QPushButton, QHBoxLayout, QWidget,QVBoxLayout, QComboBox
-from PySide6.QtCharts import QChart, QChartView, QLineSeries
+from PySide6.QtCharts import QChart, QChartView, QLineSeries, QValueAxis
+
 
 
 df1 = pd.read_csv('pomiar3.csv')
@@ -53,6 +54,8 @@ class MainWindow(QWidget):
         self.comComboBox = QComboBox()
 
         self.currentComport = "X"
+        self.arr = []
+        self.time = 0.01
 
         chartLayout = QHBoxLayout()
         portsViewLayout = QHBoxLayout()
@@ -65,20 +68,23 @@ class MainWindow(QWidget):
         self.seriesAccelY = QLineSeries()
         self.seriesAccelZ = QLineSeries()
         for x in range(len(ax)):
-            self.seriesAccelX.append(QPointF(x / dataFreqz, ax[x]))
+           # self.seriesAccelX.append(QPointF(x / dataFreqz, ax[x]))
             self.seriesAccelY.append(QPointF(x / dataFreqz, ay[x]))
             self.seriesAccelZ.append(QPointF(x / dataFreqz, az[x]))
 
         self.chartAccX = QChart()
         self.chartAccX.legend().hide()
         self.chartAccX.addSeries(self.seriesAccelX)  # adding series to chart
-        self.chartAccX.createDefaultAxes()
-        self.chartAccX.setTitle("odczyt z akcelerometru dla osi ")
+        #self.chartAccX.createDefaultAxes()
+        self.chartAccX.setPlotArea(QRectF(2.0,0.0,4.0,4.0))
+
+
+        self.chartAccX.setTitle("odczyt z akcelerometru dla osi X ")
         self.chartAccY = QChart()
         self.chartAccY.legend().hide()
         self.chartAccY.addSeries(self.seriesAccelY) # adding series to chart
         self.chartAccY.createDefaultAxes()
-        self.chartAccY.setTitle("odczyt z akcelerometru dla osi ")
+        self.chartAccY.setTitle("odczyt z akcelerometru dla osi Y ")
         self.chartAccZ = QChart()
         self.chartAccZ.legend().hide()
         self.chartAccZ.addSeries(self.seriesAccelZ) # adding series to chart
@@ -120,11 +126,16 @@ class MainWindow(QWidget):
 
         self.worker = Worker(self.UpdatePlot,100)
         self.refreshButton.clicked.connect(self.worker.start)
+
     def UpdatePlot(self):
-        arr = getData(self.currentComport)
+        self.seriesAccelX.remove
+        #self.arr.append(int(getData(self.currentComport)))
+        self.time = self.time + 0.01
         dataFreqz = 100
-        self.seriesAccelX.remove(QPointF(0 / dataFreqz,0))
-        self.seriesAccelX.append(QPointF((len(arr)-1)/dataFreqz, arr[len(arr)-1]))
+        self.seriesAccelX.append(self.time, getData(self.currentComport))
+
+        #self.seriesAccelX.append(QPointF((len(arr)-1)/dataFreqz, arr[len(arr)-1]))
+        self.chartAccX.update()
 
         self._chart_viewAccX.update()
 
@@ -169,8 +180,8 @@ def getData(currentComport):
     ax.append(int(new_ax) * accel)
     ay.append(int(new_ay))
     az.append(int(new_az))
-    print(ax)
-    return ax
+    #print(str(int(new_ax)*accel))
+    return int(new_ax)*accel
 
 
 if __name__ == "__main__":
