@@ -4,14 +4,13 @@ import sys
 import pandas as pd
 import numpy as np
 # from PyQt5.QtCore import QTimer
-from PySide6.QtCore import QPointF, QObject, QTimer, QRectF
+from PySide6.QtCore import QPointF, QObject, QTimer
 from PySide6.QtGui import QPainter
 from PySide6.QtWidgets import QMainWindow, QApplication, QGridLayout, QSizePolicy, QPushButton, QHBoxLayout, QWidget,QVBoxLayout, QComboBox
 from PySide6.QtCharts import QChart, QChartView, QLineSeries, QValueAxis
 
 
-
-df1 = pd.read_csv('pomiar3.csv')
+df1 = pd.read_csv('gui\pomiar3.csv')
 
 accel = 8.0/32768.0
 gyro = 1000.0/32768.0
@@ -23,7 +22,6 @@ for i in range(0,100):
     ax.append(0)
     ay.append(0)
     az.append(0)
-
 
 comList = []
 
@@ -55,7 +53,9 @@ class MainWindow(QWidget):
 
         self.currentComport = "X"
         self.arr = []
-        self.time = 0.01
+        self.time = 0.0
+        self.maximumXValue = 15.0
+        self.timeStep = 0.1
 
         chartLayout = QHBoxLayout()
         portsViewLayout = QHBoxLayout()
@@ -76,7 +76,15 @@ class MainWindow(QWidget):
         self.chartAccX.legend().hide()
         self.chartAccX.addSeries(self.seriesAccelX)  # adding series to chart
         #self.chartAccX.createDefaultAxes()
-        self.chartAccX.setPlotArea(QRectF(2.0,0.0,4.0,4.0))
+        
+        self.axisX = QValueAxis()
+        self.axisY = QValueAxis()
+        self.axisY.setRange(-2.0,2.0)
+        self.axisY.setTitleText("Przyśpieszenie[g]")
+        self.axisX.setRange(0.0,self.maximumXValue)
+        self.axisX.setTitleText("Czas[s]")
+        self.chartAccX.setAxisX(self.axisX,self.seriesAccelX)
+        self.chartAccX.setAxisY(self.axisY,self.seriesAccelX)
 
 
         self.chartAccX.setTitle("odczyt z akcelerometru dla osi X ")
@@ -126,18 +134,20 @@ class MainWindow(QWidget):
 
         self.worker = Worker(self.UpdatePlot,100)
         self.refreshButton.clicked.connect(self.worker.start)
+        
+        self.timevarp = 3.0
 
     def UpdatePlot(self):
         self.seriesAccelX.remove
         #self.arr.append(int(getData(self.currentComport)))
-        self.time = self.time + 0.01
+        self.time = self.time + self.timeStep
         dataFreqz = 100
         self.seriesAccelX.append(self.time, getData(self.currentComport))
-
-        #self.seriesAccelX.append(QPointF((len(arr)-1)/dataFreqz, arr[len(arr)-1]))
-        self.chartAccX.update()
-
-        self._chart_viewAccX.update()
+        if self.time >= self.maximumXValue:
+            self.time = 0.0
+            self.seriesAccelX.removePoints(0,int(self.maximumXValue/ self.timeStep)+1)
+        #self.chartAccX.update()
+        #self._chart_viewAccX.update()
 
     def FindAvalibleComports(self,comList):
 
@@ -157,7 +167,7 @@ class MainWindow(QWidget):
             combo.addItem(port)
 
 def getData(currentComport):
-    ser = serial.Serial(currentComport,timeout=0)
+    ser = serial.Serial("COM6",timeout=0)
     data = ''
     while 1:
         x = ser.read()
