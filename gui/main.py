@@ -6,7 +6,7 @@ import numpy as np
 # from PyQt5.QtCore import QTimer
 from PySide6.QtCore import QPointF, QObject, QTimer
 from PySide6.QtGui import QPainter
-from PySide6.QtWidgets import QMainWindow, QApplication, QGridLayout, QSizePolicy, QPushButton, QHBoxLayout, QWidget,QVBoxLayout, QComboBox
+from PySide6.QtWidgets import QMainWindow, QApplication, QGridLayout, QSizePolicy, QPushButton, QHBoxLayout, QWidget,QVBoxLayout, QComboBox,QCommonStyle
 from PySide6.QtCharts import QChart, QChartView, QLineSeries, QValueAxis
 
 accel = 8.0/32768.0
@@ -15,6 +15,7 @@ gyro = 1000.0/32768.0
 ax = []
 ay = []
 az = []
+
 for i in range(0,100):
     ax.append(0)
     ay.append(0)
@@ -113,7 +114,8 @@ class MainWindow(QWidget):
             case "acc":
                 axisY.setTitleText("Przyśpieszenie[g]") 
             case "gyro":
-                axisY.setTitleText("Przyśpieszenie[deg]") 
+                axisY.setTitleText("Przyśpieszenie[deg/s^2]")
+
         axisX.setRange(0.0,self.maximumXValue) # setting the range for x axis
         axisX.setTitleText("Czas[s]") # setting title to x axis
         chart.setAxisX(axisX,series) # connecting axis propertis to series 
@@ -215,5 +217,6 @@ if __name__ == "__main__":
     window.setWindowTitle("Inertial Navigation Controll App")
     window.show()
     window.resize(1200, 900)
+    #window.showFullScreen()
 
     sys.exit(app.exec())
