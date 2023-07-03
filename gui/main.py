@@ -3,14 +3,14 @@ import serial
 import sys
 import pandas as pd
 import numpy as np
-# from PyQt5.QtCore import QTimer
-from PySide6.QtCore import QPointF, QObject, QTimer
+import inertial
+from PySide6.QtCore import QObject, QTimer
 from PySide6.QtGui import QPainter
-from PySide6.QtWidgets import QMainWindow, QApplication, QGridLayout, QSizePolicy, QPushButton, QHBoxLayout, QWidget,QVBoxLayout, QComboBox,QCommonStyle
+from PySide6.QtWidgets import QApplication, QSizePolicy, QPushButton, QHBoxLayout, QWidget,QVBoxLayout, QComboBox
 from PySide6.QtCharts import QChart, QChartView, QLineSeries, QValueAxis
 
-accel = 8.0/32768.0
-gyro = 1000.0/32768.0
+accel = 2.0/32768.0
+gyro = 250.0/32768.0
 
 ax = []
 ay = []
@@ -68,6 +68,7 @@ class MainWindow(QWidget):
         self.seriesGyroX = QLineSeries()
         self.seriesGyroY = QLineSeries()
         self.seriesGyroZ = QLineSeries()
+        self.seriesXY = QLineSeries()
 
         self.chartAccX = QChart()
         self.chartAccY = QChart()
@@ -75,6 +76,7 @@ class MainWindow(QWidget):
         self.chartGyX = QChart()
         self.chartGyY = QChart()
         self.chartGyZ = QChart()
+        self.chartXY = QChart()
 
         self.SetChart(self.chartAccX,self.seriesAccelX,acChartLayout,2.0,"acc","x")
         self.SetChart(self.chartAccY,self.seriesAccelY,acChartLayout,2.0,"acc","y")
@@ -83,6 +85,27 @@ class MainWindow(QWidget):
         self.SetChart(self.chartGyX,self.seriesGyroX,gyChartLayout,360.0,"gyro","x")
         self.SetChart(self.chartGyY,self.seriesGyroY,gyChartLayout,360.0,"gyro","y")
         self.SetChart(self.chartGyZ,self.seriesGyroZ,gyChartLayout,360.0,"gyro","z")
+        
+        
+        
+        #self.SetChart(self.chartXY,self.seriesXY,mainLayout,360.0,"gyro","z")
+        self.chartXY.legend().hide()
+        self.chartXY.addSeries(self.seriesXY)  # adding series to chart
+        # .. axis properties ..
+        axisX = QValueAxis()
+        axisY = QValueAxis()
+        axisY.setRange(-2,2) # setting the range for y axis
+        axisY.setTitleText("Y") 
+        axisX.setRange(-2,2) # setting the range for x axis
+        axisX.setTitleText("X") # setting title to x axis
+        self.chartXY.setAxisX(axisX,self.seriesXY) # connecting axis propertis to series 
+        self.chartXY.setAxisY(axisY,self.seriesXY) # connecting axis properties to series
+        self.chartViewXY = QChartView(self.chartXY) #adding chart to chartView
+        self.chartViewXY.setRenderHint(QPainter.Antialiasing)
+        size = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        size.setHorizontalStretch(3)
+        self.chartViewXY.setSizePolicy(size)
+
 
         self.FindAvalibleComports(comList) # finding avalible ports and appending them to comList
         self.AddPortsToCombo(comList,self.comComboBox) # adding ports to list
@@ -91,8 +114,9 @@ class MainWindow(QWidget):
 
         portsViewLayout.addWidget(self.refreshButton)
         portsViewLayout.addWidget(self.comComboBox)
-
+        
         mainLayout.addLayout(portsViewLayout)
+        mainLayout.addWidget(self.chartViewXY) 
         mainLayout.addLayout(acChartLayout)
         mainLayout.addLayout(gyChartLayout)
         
@@ -144,6 +168,10 @@ class MainWindow(QWidget):
         self.seriesGyroX.append(self.time, getData(self.currentComport,"gx"))
         self.seriesGyroY.append(self.time, getData(self.currentComport,"gy"))
         self.seriesGyroZ.append(self.time, getData(self.currentComport,"gz"))
+        pos = []
+        pos = getData(self.currentComport,"pos")
+        self.seriesXY.append(pos[0],pos[1])
+        #print(getData(self.currentComport,"pos"))
         
         if self.time >= self.maximumXValue:
             self.time = 0.0
@@ -196,7 +224,10 @@ def getData(currentComport,dataType):
     data = data[i+1:]
     i =data.find(',')
     new_gz = data[0:i]
+    inertial.nextPos()
     match dataType:
+        case "pos":
+            return inertial.nextPos()
         case "ax":
             return int(new_ax)*accel
         case "ay":
@@ -217,6 +248,6 @@ if __name__ == "__main__":
     window.setWindowTitle("Inertial Navigation Controll App")
     window.show()
     window.resize(1200, 900)
+    inertial.setInitAng()
     #window.showFullScreen()
-
     sys.exit(app.exec())
