@@ -1,7 +1,7 @@
 import serial.tools.list_ports
 import serial
 import sys
-import pandas as pd
+# import pandas as pd
 import numpy as np
 import inertial
 from PySide6.QtCore import QObject, QTimer
@@ -45,7 +45,7 @@ class Worker(QObject):
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
-
+        self.i = 1
         self.refreshButton = QPushButton("refresh")
         self.comComboBox = QComboBox()
         self.angleXlabel = QLabel()
@@ -172,22 +172,26 @@ class MainWindow(QWidget):
 
     def UpdatePlot(self):       
         #self.arr.append(int(getData(self.currentComport)))
+        if self.i == 1:
+            inertial.setInitAng(self.currentComport)
+            self.i = self.i +1
         self.time = self.time + self.timeStep
         dataFreqz = 100
-        self.seriesAccelX.append(self.time, getData(self.currentComport,"ax"))
-        self.seriesAccelY.append(self.time, getData(self.currentComport,"ay"))
-        self.seriesAccelZ.append(self.time, getData(self.currentComport,"az"))
-        self.seriesGyroX.append(self.time, getData(self.currentComport,"gx"))
-        self.seriesGyroY.append(self.time, getData(self.currentComport,"gy"))
-        self.seriesGyroZ.append(self.time, getData(self.currentComport,"gz"))
-        dataIner = []
-        dataIner = getData(self.currentComport,"pos")
-        pos = dataIner[0]
-        angle = dataIner[1]
-        self.seriesXY.append(pos[0],pos[1])
-        self.angleXlabel.setText("X angle: " + str(angle[0]*180/np.pi))
-        self.angleYlabel.setText("Y angle: " + str(angle[1]*180/np.pi))
-        print(dataIner)
+        inertial.nextPos(self.currentComport)
+        self.seriesAccelX.append(self.time, inertial.currAccel[0] )
+        self.seriesAccelY.append(self.time, inertial.currAccel[1])
+        self.seriesAccelZ.append(self.time, inertial.currAccel[2])
+        self.seriesGyroX.append(self.time, inertial.currGyro[0])
+        self.seriesGyroY.append(self.time, inertial.currGyro[1])
+        self.seriesGyroZ.append(self.time, inertial.currGyro[2])
+        # dataIner = []
+        # dataIner = getData(self.currentComport,"pos")
+        # pos = dataIner[0]
+        # angle = dataIner[1]
+        self.seriesXY.append(inertial.pos[0],inertial.pos[1])
+        self.angleXlabel.setText("X angle: " + str(round(inertial.currAng[0]*180/np.pi, 4)))
+        self.angleYlabel.setText("Y angle: " + str(round(inertial.currAng[1]*180/np.pi-90, 4)))
+        # print(dataIner)
         
         if self.time >= self.maximumXValue:
             self.time = 0.0
@@ -213,48 +217,48 @@ class MainWindow(QWidget):
         for port in sorted(comList):
             combo.addItem(port)
 
-def getData(currentComport,dataType):
-    ser = serial.Serial(currentComport,timeout=0)
-    data = ''
-    while 1:
-        x = ser.read()
-        x = x.decode('utf-8')
-        data = data + x
-        if x == '|':
-            ser.close()
-            break
-    i = data.find(',')
-    new_ax = data[0:i]
-    data = data[i+1:]
-    i = data.find(',')
-    new_ay = data[0:i]
-    data = data[i+1:]
-    i =data.find(',')
-    new_az = data[0:i]
-    data = data[i+1:]
-    i =data.find(',')
-    new_gx = data[0:i]
-    data = data[i+1:]
-    i =data.find(',')
-    new_gy = data[0:i]
-    data = data[i+1:]
-    i =data.find(',')
-    new_gz = data[0:i]
-    match dataType:
-        case "pos":
-            return inertial.nextPos()
-        case "ax":
-            return int(new_ax)*accel
-        case "ay":
-            return int(new_ay)*accel
-        case "az":
-            return int(new_az)*accel
-        case "gx":
-            return int(new_gx)*gyro       
-        case "gz":
-            return int(new_gy)*gyro
-        case "gy":
-            return int(new_gz)*gyro
+# def getData(currentComport,dataType):
+#     ser = serial.Serial(currentComport,timeout=0)
+#     data = ''
+#     while 1:
+#         x = ser.read()
+#         x = x.decode('utf-8')
+#         data = data + x
+#         if x == '|':
+#             ser.close()
+#             break
+#     i = data.find(',')
+#     new_ax = data[0:i]
+#     data = data[i+1:]
+#     i = data.find(',')
+#     new_ay = data[0:i]
+#     data = data[i+1:]
+#     i =data.find(',')
+#     new_az = data[0:i]
+#     data = data[i+1:]
+#     i =data.find(',')
+#     new_gx = data[0:i]
+#     data = data[i+1:]
+#     i =data.find(',')
+#     new_gy = data[0:i]
+#     data = data[i+1:]
+#     i =data.find(',')
+#     new_gz = data[0:i]
+#     match dataType:
+#         case "pos":
+#             return inertial.nextPos()
+#         case "ax":
+#             return int(new_ax)*accel
+#         case "ay":
+#             return int(new_ay)*accel
+#         case "az":
+#             return int(new_az)*accel
+#         case "gx":
+#             return int(new_gx)*gyro
+#         case "gz":
+#             return int(new_gy)*gyro
+#         case "gy":
+#             return int(new_gz)*gyro
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
@@ -263,6 +267,6 @@ if __name__ == "__main__":
     window.setWindowTitle("Inertial Navigation Controll App")
     window.show()
     window.resize(1200, 900)
-    inertial.setInitAng()
+    # inertial.setInitAng()
     #window.showFullScreen()
     sys.exit(app.exec())
