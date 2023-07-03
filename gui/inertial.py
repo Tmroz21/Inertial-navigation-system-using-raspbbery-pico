@@ -17,7 +17,7 @@ currSpeed = [0, 0]
 pos = [0, 0]
 accelOffset = [0, 0]
 def getData():
-    ser = serial.Serial("COM6", timeout=0)
+    ser = serial.Serial("COM11", timeout=0)
     data = ''
     while 1:
         x = ser.read()
@@ -91,6 +91,7 @@ def nextPos():
 
     global pos
     pos = [pos[0] + currSpeed[0] * sampleTime, pos[1] + currSpeed[1] * sampleTime]
+    #date = [pos,currAng]
     #print(pos)
-    return(pos)
+    return [pos,currAng]
     # print(currSpeed)

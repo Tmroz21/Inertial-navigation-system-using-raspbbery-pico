@@ -6,7 +6,7 @@ import numpy as np
 import inertial
 from PySide6.QtCore import QObject, QTimer
 from PySide6.QtGui import QPainter
-from PySide6.QtWidgets import QApplication, QSizePolicy, QPushButton, QHBoxLayout, QWidget,QVBoxLayout, QComboBox
+from PySide6.QtWidgets import QApplication, QSizePolicy, QPushButton, QHBoxLayout, QWidget,QVBoxLayout, QComboBox, QLabel
 from PySide6.QtCharts import QChart, QChartView, QLineSeries, QValueAxis
 
 accel = 2.0/32768.0
@@ -48,6 +48,8 @@ class MainWindow(QWidget):
 
         self.refreshButton = QPushButton("refresh")
         self.comComboBox = QComboBox()
+        self.angleXlabel = QLabel()
+        self.angleYlabel = QLabel()
 
         self.currentComport = "X"
         self.arr = []
@@ -57,6 +59,7 @@ class MainWindow(QWidget):
 
         acChartLayout = QHBoxLayout()
         gyChartLayout = QHBoxLayout()
+        labelLayout = QHBoxLayout()
         portsViewLayout = QHBoxLayout()
         mainLayout = QVBoxLayout()
 
@@ -87,38 +90,47 @@ class MainWindow(QWidget):
         self.SetChart(self.chartGyZ,self.seriesGyroZ,gyChartLayout,360.0,"gyro","z")
         
         
-        
-        #self.SetChart(self.chartXY,self.seriesXY,mainLayout,360.0,"gyro","z")
+        ####
         self.chartXY.legend().hide()
         self.chartXY.addSeries(self.seriesXY)  # adding series to chart
         # .. axis properties ..
         axisX = QValueAxis()
         axisY = QValueAxis()
-        axisY.setRange(-2,2) # setting the range for y axis
+        axisY.setRange(-20,20) # setting the range for y axis
         axisY.setTitleText("Y") 
-        axisX.setRange(-2,2) # setting the range for x axis
+        axisX.setRange(-20,20) # setting the range for x axis
         axisX.setTitleText("X") # setting title to x axis
         self.chartXY.setAxisX(axisX,self.seriesXY) # connecting axis propertis to series 
         self.chartXY.setAxisY(axisY,self.seriesXY) # connecting axis properties to series
         self.chartViewXY = QChartView(self.chartXY) #adding chart to chartView
         self.chartViewXY.setRenderHint(QPainter.Antialiasing)
         size = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        size.setHorizontalStretch(3)
+        size.setHorizontalStretch(1)
         self.chartViewXY.setSizePolicy(size)
-
+        ####
 
         self.FindAvalibleComports(comList) # finding avalible ports and appending them to comList
         self.AddPortsToCombo(comList,self.comComboBox) # adding ports to list
         
         self.comComboBox.activated.connect(self.SetCurrentPort) # connecting SetCurrentPort function to comComboBox activating when item is chosen from the list
 
+
         portsViewLayout.addWidget(self.refreshButton)
         portsViewLayout.addWidget(self.comComboBox)
-        
+        labelLayout.addWidget(self.angleXlabel)
+        labelLayout.addWidget(self.angleYlabel)
+        self.angleXlabel.setText("X angle:")
+        self.angleYlabel.setText("Y angle:")
         mainLayout.addLayout(portsViewLayout)
-        mainLayout.addWidget(self.chartViewXY) 
+        mainLayout.addWidget(self.chartViewXY)
+        mainLayout.addLayout(labelLayout) 
         mainLayout.addLayout(acChartLayout)
         mainLayout.addLayout(gyChartLayout)
+        mainLayout.setStretch(0,1)
+        mainLayout.setStretch(1,12)
+        mainLayout.setStretch(2,1)
+        mainLayout.setStretch(3,10)
+        mainLayout.setStretch(4,10)
         
         self.setLayout(mainLayout)
 
@@ -168,10 +180,14 @@ class MainWindow(QWidget):
         self.seriesGyroX.append(self.time, getData(self.currentComport,"gx"))
         self.seriesGyroY.append(self.time, getData(self.currentComport,"gy"))
         self.seriesGyroZ.append(self.time, getData(self.currentComport,"gz"))
-        pos = []
-        pos = getData(self.currentComport,"pos")
+        dataIner = []
+        dataIner = getData(self.currentComport,"pos")
+        pos = dataIner[0]
+        angle = dataIner[1]
         self.seriesXY.append(pos[0],pos[1])
-        #print(getData(self.currentComport,"pos"))
+        self.angleXlabel.setText("X angle: " + str(angle[0]*180/np.pi))
+        self.angleYlabel.setText("Y angle: " + str(angle[1]*180/np.pi))
+        print(dataIner)
         
         if self.time >= self.maximumXValue:
             self.time = 0.0
@@ -224,7 +240,6 @@ def getData(currentComport,dataType):
     data = data[i+1:]
     i =data.find(',')
     new_gz = data[0:i]
-    inertial.nextPos()
     match dataType:
         case "pos":
             return inertial.nextPos()
