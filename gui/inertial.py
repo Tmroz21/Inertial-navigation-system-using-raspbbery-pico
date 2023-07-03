@@ -106,7 +106,8 @@ def nextPos(com):
 
     global pos
     pos = [pos[0] + currSpeed[0] * sampleTime, pos[1] + currSpeed[1] * sampleTime]
-    
+    print(pos)
+
 
 def kalmanGyroUpdate():
 
@@ -155,7 +156,7 @@ def QaChange(sel):
     if sel:
         Qa = Qa - 0.01
         if Qa <= 0.01:
-            Qa = 0.01
+            Qa = 0.1
     if sel == 2:
         Qa = Qa + 0.01
 

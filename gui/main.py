@@ -47,6 +47,12 @@ class MainWindow(QWidget):
         super().__init__()
         self.i = 1
         self.refreshButton = QPushButton("refresh")
+        self.sigmaUpButton = QPushButton("upSigma")
+        self.sigmaDownButton = QPushButton("downSigma")
+        self.QaUpButton = QPushButton("upQaccel")
+        self.QaDownButton = QPushButton("downQaccel")
+
+
         self.comComboBox = QComboBox()
         self.angleXlabel = QLabel()
         self.angleYlabel = QLabel()
@@ -150,6 +156,12 @@ class MainWindow(QWidget):
 
         self.worker = Worker(self.UpdatePlot,100)
         self.refreshButton.clicked.connect(self.worker.start)
+        self.sigmaDownButton.clicked.connect(inertial.sigmaChange(1))
+        self.sigmaUpButton.clicked.connect(inertial.sigmaChange(2))
+        self.QaUpButton.clicked.connect(inertial.QaChange(2))
+        self.QaDownButton.clicked.connect(inertial.QaChange(1))
+
+
         
 
     def SetChart(self,chart,series,series1,chartLayout,xAxisRange,chartType,title):
