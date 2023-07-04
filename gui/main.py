@@ -157,7 +157,7 @@ class MainWindow(QWidget):
         mainLayout.setStretch(2,1)
         mainLayout.setStretch(3,1)
         mainLayout.setStretch(4,10)
-        mainLayout.setStretch(4,10)
+        mainLayout.setStretch(5,10)
         
         self.setLayout(mainLayout)
 
