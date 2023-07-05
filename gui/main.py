@@ -56,6 +56,7 @@ class MainWindow(QWidget):
         self.comComboBox = QComboBox()
         self.angleXlabel = QLabel()
         self.angleYlabel = QLabel()
+        self.angleZlabel = QLabel()
 
         self.currentComport = "X"
         self.arr = []
@@ -140,8 +141,10 @@ class MainWindow(QWidget):
         portsViewLayout.addWidget(self.comComboBox)
         labelLayout.addWidget(self.angleXlabel)
         labelLayout.addWidget(self.angleYlabel)
+        labelLayout.addWidget(self.angleZlabel)
         self.angleXlabel.setText("X angle:")
         self.angleYlabel.setText("Y angle:")
+        self.angleZlabel.setText("Z angle:")
         buttonLayout.addWidget(self.sigmaDownButton)
         buttonLayout.addWidget(self.sigmaUpButton)
         buttonLayout.addWidget(self.QaDownButton)
@@ -184,7 +187,7 @@ class MainWindow(QWidget):
             case "acc":
                 axisY.setTitleText("Przyśpieszenie[g]") 
             case "gyro":
-                axisY.setTitleText("Przyśpieszenie[deg/s^2]")
+                axisY.setTitleText("Prędkość[deg/s]")
 
         axisX.setRange(0.0,self.maximumXValue) # setting the range for x axis
         axisX.setTitleText("Czas[s]") # setting title to x axis
@@ -237,6 +240,8 @@ class MainWindow(QWidget):
         self.seriesXY.append(inertial.pos[0],inertial.pos[1])
         self.angleXlabel.setText("X angle: " + str(round(inertial.currAng[0]*180/np.pi, 4)))
         self.angleYlabel.setText("Y angle: " + str(round(inertial.currAng[1]*180/np.pi-90, 4)))
+        self.angleZlabel.setText("Z angle: " + str(round(inertial.currAng[2]*180/np.pi, 4)))
+        
         # print(dataIner)
         
         if self.time >= self.maximumXValue:
